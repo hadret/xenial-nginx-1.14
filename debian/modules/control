@@ -43,11 +43,8 @@ Files-Excluded: test
 Version: 0.9.2
 
 Module: http-cache-purge
-Homepage: https://github.com/FRiCKLE/ngx_cache_purge/
-Version: 2.3
-Patch:
-  dynamic-module.patch
-  segfault-1.11.6.patch
+Homepage: https://github.com/nginx-modules/ngx_cache_purge
+Version: 2.4.2
 
 Module: http-dav-ext
 Homepage: https://github.com/arut/nginx-dav-ext-module
