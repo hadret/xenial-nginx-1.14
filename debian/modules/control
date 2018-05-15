@@ -65,3 +65,6 @@ Homepage: https://github.com/arut/nginx-rtmp-module
 Files-Excluded: test
 Version: 1.2.1
 
+Module: http-upsync
+Homepage: https://github.com/weibocom/nginx-upsync-module
+Version: master
