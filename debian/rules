@@ -22,6 +22,7 @@ DYN_MODS := \
 	http-uploadprogress \
 	http-upstream-fair \
 	http-xslt-filter \
+	http-vhost-traffic-status \
 	mail \
 	nchan \
 	rtmp \
@@ -117,7 +118,8 @@ full_configure_flags := \
 			--add-dynamic-module=$(MODULESDIR)/http-dav-ext \
 			--add-dynamic-module=$(MODULESDIR)/http-echo \
 			--add-dynamic-module=$(MODULESDIR)/http-upstream-fair \
-			--add-dynamic-module=$(MODULESDIR)/http-subs-filter
+			--add-dynamic-module=$(MODULESDIR)/http-subs-filter \
+			--add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status
 
 extras_configure_flags := \
 			$(common_configure_flags) \
@@ -151,7 +153,8 @@ extras_configure_flags := \
 			--add-dynamic-module=$(MODULESDIR)/rtmp \
 			--add-dynamic-module=$(MODULESDIR)/http-uploadprogress \
 			--add-dynamic-module=$(MODULESDIR)/http-upstream-fair \
-			--add-dynamic-module=$(MODULESDIR)/http-subs-filter
+			--add-dynamic-module=$(MODULESDIR)/http-subs-filter \
+			--add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status
 
 %:
 	dh $@ --without autoreconf

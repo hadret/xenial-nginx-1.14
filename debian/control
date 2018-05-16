@@ -109,6 +109,7 @@ Depends: libnginx-mod-http-auth-pam (= ${binary:Version}),
          libnginx-mod-http-subs-filter (= ${binary:Version}),
          libnginx-mod-http-upstream-fair (= ${binary:Version}),
          libnginx-mod-http-xslt-filter (= ${binary:Version}),
+         libnginx-mod-http-vhost-traffic-status (= ${binary:Version}),
          libnginx-mod-mail (= ${binary:Version}),
          libnginx-mod-stream (= ${binary:Version}),
          nginx-common (= ${source:Version}),
@@ -184,6 +185,7 @@ Depends: libnginx-mod-http-auth-pam (= ${binary:Version}),
          libnginx-mod-http-uploadprogress (= ${binary:Version}),
          libnginx-mod-http-upstream-fair (= ${binary:Version}),
          libnginx-mod-http-xslt-filter (= ${binary:Version}),
+         libnginx-mod-http-vhost-traffic-status (= ${binary:Version}),
          libnginx-mod-mail (= ${binary:Version}),
          libnginx-mod-nchan (= ${binary:Version}),
          libnginx-mod-stream (= ${binary:Version}),
@@ -426,3 +428,13 @@ Description: RTMP support for Nginx
   - Stream relay support via a push or pull model;
   - Integrated stream recording;
   - and more.
+
+Package: libnginx-mod-http-vhost-traffic-status
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: nginx virtual host traffic status module
+ VTS provides access to virtual host status information. It contains the
+ current status such as servers, upstreams, caches. This is similar to
+ the live activity monitoring of nginx plus.
+ .
+ VTS provides access to virtual host status information.

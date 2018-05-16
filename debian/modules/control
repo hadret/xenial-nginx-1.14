@@ -68,3 +68,7 @@ Version: 1.2.1
 Module: http-upsync
 Homepage: https://github.com/weibocom/nginx-upsync-module
 Version: master
+
+Module: http-vts
+Homepage: https://github.com/vozlt/nginx-module-vts
+Version: master
