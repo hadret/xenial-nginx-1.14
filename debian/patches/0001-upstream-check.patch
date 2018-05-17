@@ -1,3 +1,11 @@
+Date: Thu, 17 May 2018 16:23:36 +0100
+From: Filip Chabik <hadret@gmail.com>
+Subject: First part of upstream check module
+
+This is first part of getting upstream check module to work in Nginx. Every
+default upstream module (rr, ip_hash & least_conn) needs to be patched prior
+adding the module itself.
+
 diff --git a/src/http/modules/ngx_http_upstream_hash_module.c b/src/http/modules/ngx_http_upstream_hash_module.c
 index d67f34d..5ccdbbe 100644
 --- a/src/http/modules/ngx_http_upstream_hash_module.c
