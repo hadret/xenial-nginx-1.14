@@ -11,6 +11,7 @@ Build-Depends: debhelper (>= 10),
                libgd-dev,
                libgeoip-dev,
                libhiredis-dev,
+               libldap2-dev,
                liblua5.1-0-dev [!i386 !amd64 !kfreebsd-i386 !armel !armhf !powerpc !powerpcspe !mips !mipsel],
                libluajit-5.1-dev [i386 amd64 kfreebsd-i386 armel armhf powerpc powerpcspe mips mipsel],
                libmhash-dev,
@@ -101,7 +102,8 @@ Description: nginx web/proxy server (standard version)
 
 Package: nginx-full
 Architecture: any
-Depends: libnginx-mod-http-auth-pam (= ${binary:Version}),
+Depends: libnginx-mod-http-auth-ldap (= ${binary:Version}),
+         libnginx-mod-http-auth-pam (= ${binary:Version}),
          libnginx-mod-http-dav-ext (= ${binary:Version}),
          libnginx-mod-http-echo (= ${binary:Version}),
          libnginx-mod-http-geoip (= ${binary:Version}),
@@ -171,7 +173,8 @@ Description: nginx web/proxy server (basic version)
 
 Package: nginx-extras
 Architecture: any
-Depends: libnginx-mod-http-auth-pam (= ${binary:Version}),
+Depends: libnginx-mod-http-auth-ldap (= ${binary:Version}),
+         libnginx-mod-http-auth-pam (= ${binary:Version}),
          libnginx-mod-http-cache-purge (= ${binary:Version}),
          libnginx-mod-http-dav-ext (= ${binary:Version}),
          libnginx-mod-http-echo (= ${binary:Version}),
@@ -432,9 +435,18 @@ Description: RTMP support for Nginx
 Package: libnginx-mod-http-vhost-traffic-status
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: nginx virtual host traffic status module
+Description: virtual host traffic status module for Nginx
  VTS provides access to virtual host status information. It contains the
  current status such as servers, upstreams, caches. This is similar to
  the live activity monitoring of nginx plus.
  .
  VTS provides access to virtual host status information.
+
+Package: libnginx-mod-http-auth-ldap
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: LDAP authentication module for Nginx
+ The nginx_http_auth_ldap module enables authentication using LDAP.
+ .
+ The module uses LDAP as a backend for simple http authentication. It
+ also allows one to use multiple LDAP servers.

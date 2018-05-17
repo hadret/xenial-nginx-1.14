@@ -69,6 +69,10 @@ Module: http-upsync
 Homepage: https://github.com/weibocom/nginx-upsync-module
 Version: master
 
-Module: http-vts
+Module: http-http-vhost-traffic-status
 Homepage: https://github.com/vozlt/nginx-module-vts
+Version: master
+
+Module: http-auth-ldap
+Homepage: https://github.com/kvspb/nginx-auth-ldap
 Version: master
