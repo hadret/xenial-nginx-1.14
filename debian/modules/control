@@ -76,3 +76,7 @@ Version: master
 Module: http-auth-ldap
 Homepage: https://github.com/kvspb/nginx-auth-ldap
 Version: master
+
+Module: http-upstream-check
+Homepage: https://github.com/xiaokai-wang/nginx_upstream_check_module
+Version: master
