@@ -276,6 +276,22 @@ ngx_http_vhost_traffic_status_handler(ngx_http_request_t *r)
 }
 
 
+ngx_msec_t
+ngx_http_vhost_traffic_status_current_msec(void)
+{
+    time_t           sec;
+    ngx_uint_t       msec;
+    struct timeval   tv;
+
+    ngx_gettimeofday(&tv);
+
+    sec = tv.tv_sec;
+    msec = tv.tv_usec / 1000;
+
+    return (ngx_msec_t) sec * 1000 + msec;
+}
+
+
 ngx_msec_int_t
 ngx_http_vhost_traffic_status_request_time(ngx_http_request_t *r)
 {
@@ -758,7 +774,7 @@ ngx_http_vhost_traffic_status_create_loc_conf(ngx_conf_t *cf)
     conf->limit = NGX_CONF_UNSET;
     conf->limit_check_duplicate = NGX_CONF_UNSET;
 
-    conf->start_msec = ngx_current_msec;
+    conf->start_msec = ngx_http_vhost_traffic_status_current_msec();
     conf->format = NGX_CONF_UNSET;
     conf->average_method = NGX_CONF_UNSET;
     conf->average_period = NGX_CONF_UNSET_MSEC;
@@ -899,6 +915,13 @@ ngx_http_vhost_traffic_status_init_worker(ngx_cycle_t *cycle)
                    "http vts init worker");
 
     ctx = ngx_http_cycle_get_module_main_conf(cycle, ngx_http_vhost_traffic_status_module);
+
+    if (ctx == NULL) {
+        ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+                       "vts::init_worker(): is bypassed due to no http block in configure file");
+        return NGX_OK;
+    }
+
     if (!(ctx->enable & ctx->dump) || ctx->rbtree == NULL) {
         ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
                        "vts::init_worker(): is bypassed");
@@ -929,6 +952,13 @@ ngx_http_vhost_traffic_status_exit_worker(ngx_cycle_t *cycle)
                    "http vts exit worker");
 
     ctx = ngx_http_cycle_get_module_main_conf(cycle, ngx_http_vhost_traffic_status_module);
+
+    if (ctx == NULL) {
+        ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+                       "vts::exit_worker(): is bypassed due to no http block in configure file");
+        return;
+    }
+
     if (!(ctx->enable & ctx->dump) || ctx->rbtree == NULL) {
         ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
                        "vts::exit_worker(): is bypassed");

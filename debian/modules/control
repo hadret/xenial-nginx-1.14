@@ -71,7 +71,7 @@ Version: master
 
 Module: http-http-vhost-traffic-status
 Homepage: https://github.com/vozlt/nginx-module-vts
-Version: master
+Version: v0.1.16
 
 Module: http-auth-ldap
 Homepage: https://github.com/kvspb/nginx-auth-ldap

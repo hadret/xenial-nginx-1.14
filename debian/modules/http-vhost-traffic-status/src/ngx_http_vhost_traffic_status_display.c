@@ -606,7 +606,7 @@ ngx_http_vhost_traffic_status_display_set_main(ngx_http_request_t *r,
     ngx_http_vhost_traffic_status_shm_info(r, shm_info);
 
     buf = ngx_sprintf(buf, NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_MAIN, &ngx_cycle->hostname,
-                      NGINX_VERSION, vtscf->start_msec, ngx_current_msec,
+                      NGINX_VERSION, vtscf->start_msec, ngx_http_vhost_traffic_status_current_msec(),
                       ac, rd, wr, wa, ap, hn, rq,
                       shm_info->name, shm_info->max_size,
                       shm_info->used_size, shm_info->used_node);
@@ -1114,7 +1114,7 @@ ngx_http_vhost_traffic_status_display_set_upstream_group(ngx_http_request_t *r,
                 usn.max_fails = peer->max_fails;
                 usn.fail_timeout = peer->fail_timeout;
                 usn.backup = 0;
-                usn.down = peer->down;
+                usn.down = (peer->fails >= peer->max_fails || peer->down);
 
 #if nginx_version > 1007001
                 usn.name = peer->name;
