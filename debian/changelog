@@ -1,9 +1,16 @@
+nginx (1.14.0-2xenial3) xenial; urgency=medium
+
+  * Non-maintainer upload.
+  * Switch upsync to dynamic module.
+  * Add http-vhost-traffic-status watch file.
+
+ -- Filip Chabik <hadret@gmail.com>  Fri, 25 May 2018 10:20:01 +0200
+
 nginx (1.14.0-2xenial2) xenial; urgency=medium
 
-  * NMU.
   * Patch upstream fair against upstream check module.
 
- -- Hadret <hadret@gmail.com>  Thu, 24 May 2018 09:21:09 +0200
+ -- Filip Chabik <hadret@gmail.com>  Thu, 24 May 2018 09:21:09 +0200
 
 nginx (1.14.0-2xenial1) xenial; urgency=medium
 
