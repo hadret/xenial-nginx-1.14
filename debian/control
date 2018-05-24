@@ -111,6 +111,7 @@ Depends: libnginx-mod-http-auth-ldap (= ${binary:Version}),
          libnginx-mod-http-image-filter (= ${binary:Version}),
          libnginx-mod-http-subs-filter (= ${binary:Version}),
          libnginx-mod-http-upstream-fair (= ${binary:Version}),
+         libnginx-mod-http-upsync (= ${binary:Version}),
          libnginx-mod-http-xslt-filter (= ${binary:Version}),
          libnginx-mod-http-vhost-traffic-status (= ${binary:Version}),
          libnginx-mod-mail (= ${binary:Version}),
@@ -188,6 +189,7 @@ Depends: libnginx-mod-http-auth-ldap (= ${binary:Version}),
          libnginx-mod-http-subs-filter (= ${binary:Version}),
          libnginx-mod-http-uploadprogress (= ${binary:Version}),
          libnginx-mod-http-upstream-fair (= ${binary:Version}),
+         libnginx-mod-http-upsync (= ${binary:Version}),
          libnginx-mod-http-xslt-filter (= ${binary:Version}),
          libnginx-mod-http-vhost-traffic-status (= ${binary:Version}),
          libnginx-mod-mail (= ${binary:Version}),
@@ -451,3 +453,10 @@ Description: LDAP authentication module for Nginx
  .
  The module uses LDAP as a backend for simple http authentication. It
  also allows one to use multiple LDAP servers.
+
+Package: libnginx-mod-http-upsync
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: dynamic upstreams via consul or etcd for Nginx
+ Sync upstreams from consul or etcd, dynamically modify backend servers
+ attributes like weight, max_fails etc. without the need to reload nginx.

@@ -22,6 +22,7 @@ DYN_MODS := \
 	http-subs-filter \
 	http-uploadprogress \
 	http-upstream-fair \
+	http-upsync \
 	http-xslt-filter \
 	http-vhost-traffic-status \
 	mail \
@@ -115,7 +116,7 @@ full_configure_flags := \
 			--with-mail=dynamic \
 			--with-mail_ssl_module \
 			--add-module=$(MODULESDIR)/http-upstream-check \
-			--add-module=$(MODULESDIR)/http-upsync \
+			--add-dynamic-module=$(MODULESDIR)/http-upsync \
 			--add-dynamic-module=$(MODULESDIR)/http-auth-ldap \
 			--add-dynamic-module=$(MODULESDIR)/http-auth-pam \
 			--add-dynamic-module=$(MODULESDIR)/http-dav-ext \
@@ -144,7 +145,7 @@ extras_configure_flags := \
 			--with-stream_ssl_module \
 			--with-stream_ssl_preread_module \
 			--add-module=$(MODULESDIR)/http-upstream-check \
-			--add-module=$(MODULESDIR)/http-upsync \
+			--add-dynamic-module=$(MODULESDIR)/http-upsync \
 			--add-dynamic-module=$(MODULESDIR)/http-headers-more-filter \
 			--add-dynamic-module=$(MODULESDIR)/http-auth-ldap \
 			--add-dynamic-module=$(MODULESDIR)/http-auth-pam \
