@@ -67,7 +67,7 @@ Version: 1.2.1
 
 Module: http-upsync
 Homepage: https://github.com/weibocom/nginx-upsync-module
-Version: master
+Version: 9d7d30a
 
 Module: http-vhost-traffic-status
 Homepage: https://github.com/vozlt/nginx-module-vts
@@ -79,4 +79,4 @@ Version: master
 
 Module: http-upstream-check
 Homepage: https://github.com/xiaokai-wang/nginx_upstream_check_module
-Version: master
+Version: 77b1a6b
