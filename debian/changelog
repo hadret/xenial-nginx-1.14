@@ -1,4 +1,4 @@
-nginx (1.14.0-2xenial3) xenial; urgency=medium
+nginx (1.14.0-2xenial4) xenial; urgency=medium
 
   * Non-maintainer upload.
   * Switch upsync to dynamic module.
