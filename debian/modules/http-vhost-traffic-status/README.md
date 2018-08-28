@@ -61,12 +61,14 @@ Table of Contents
   * [vhost_traffic_status_filter_by_host](#vhost_traffic_status_filter_by_host)
   * [vhost_traffic_status_filter_by_set_key](#vhost_traffic_status_filter_by_set_key)
   * [vhost_traffic_status_filter_check_duplicate](#vhost_traffic_status_filter_check_duplicate)
+  * [vhost_traffic_status_filter_max_node](#vhost_traffic_status_filter_max_node)
   * [vhost_traffic_status_limit](#vhost_traffic_status_limit)
   * [vhost_traffic_status_limit_traffic](#vhost_traffic_status_limit_traffic)
   * [vhost_traffic_status_limit_traffic_by_set_key](#vhost_traffic_status_limit_traffic_by_set_key)
   * [vhost_traffic_status_limit_check_duplicate](#vhost_traffic_status_limit_check_duplicate)
   * [vhost_traffic_status_set_by_filter](#vhost_traffic_status_set_by_filter)
   * [vhost_traffic_status_average_method](#vhost_traffic_status_average_method)
+  * [vhost_traffic_status_histogram_buckets](#vhost_traffic_status_histogram_buckets)
   * [vhost_traffic_status_bypass_limit](#vhost_traffic_status_bypass_limit)
   * [vhost_traffic_status_bypass_stats](#vhost_traffic_status_bypass_stats)
 * [See Also](#see-also)
@@ -75,13 +77,14 @@ Table of Contents
 * [Author](#author)
 
 ## Version
-This document describes nginx-module-vts `v0.1.16` released on 21 May 2018.
+This document describes nginx-module-vts `v0.1.18` released on 22 Jun 2018.
 
 ## Dependencies
 * [nginx](http://nginx.org)
 
 ## Compatibility
 * Nginx
+  * 1.15.x (last tested: 1.15.0)
   * 1.14.x (last tested: 1.14.0)
   * 1.13.x (last tested: 1.13.12)
   * 1.12.x (last tested: 1.12.2)
@@ -144,19 +147,14 @@ First of all, the directive `vhost_traffic_status_zone` is required,
 and then if the directive `vhost_traffic_status_display` is set, can be access to as follows:
 
 * /status/format/json
-
-* /status/format/html
-
-* /status/format/jsonp
-
-* /status/control
-
   * If you request `/status/format/json`, will respond with a JSON document containing the current activity data for using in live dashboards and third-party monitoring tools.
-
+* /status/format/html
   * If you request `/status/format/html`, will respond with the built-in live dashboard in HTML that requests internally to `/status/format/json`.
- 
+* /status/format/jsonp
   * If you request `/status/format/jsonp`, will respond with a JSONP callback function containing the current activity data for using in live dashboards and third-party monitoring tools. 
-
+* /status/format/prometheus
+  * If you request `/status/format/prometheus`, will respond with a [prometheus](https://prometheus.io) document containing the current activity data.
+* /status/control
   * If you request `/status/control`, will respond with a JSON document after it reset or delete zones through a query string. See the [Control](#control).
 
 JSON document contains as follows:
@@ -202,10 +200,15 @@ JSON document contains as follows:
                 "hit":...,
                 "scarce":...
             },
+            "requestMsecCounter":...,
             "requestMsec":...,
             "requestMsecs":{
                 "times":[...],
                 "msecs":[...]
+            },
+            "requestBuckets":{
+                "msecs":[...],
+                "counters":[...]
             },
         }
         ...
@@ -231,10 +234,15 @@ JSON document contains as follows:
                     "hit":...,
                     "scarce":...
                 },
+                "requestMsecCounter":...,
                 "requestMsec":...,
                 "requestMsecs":{
                     "times":[...],
                     "msecs":[...]
+                },
+                "requestBuckets":{
+                    "msecs":[...],
+                    "counters":[...]
                 },
             },
             ...
@@ -255,15 +263,25 @@ JSON document contains as follows:
                     "4xx":...,
                     "5xx":...
                 },
+                "requestMsecCounter":...,
                 "requestMsec":...,
                 "requestMsecs":{
                     "times":[...],
                     "msecs":[...]
                 },
+                "requestBuckets":{
+                    "msecs":[...],
+                    "counters":[...]
+                },
+                "responseMsecCounter":...,
                 "responseMsec":...,
                 "responseMsecs":{
                     "times":[...],
                     "msecs":[...]
+                },
+                "responseBuckets":{
+                    "msecs":[...],
+                    "counters":[...]
                 },
                 "weight":...,
                 "maxFails":...,
@@ -316,7 +334,8 @@ JSON document contains as follows:
 * cacheZones
   * Traffic(in/out) and size(capacity/used) and hit ratio per each cache zone when using the proxy_cache directive.
 
-The directive `vhost_traffic_status_display_format` sets the default ouput format that is one of json or html. (Default: json)
+The `overCounts` objects in JSON document are mostly for 32bit system and will be increment by 1 if its value is overflowed.
+The directive `vhost_traffic_status_display_format` sets the default ouput format that is one of json, jsonp, html, prometheus. (Default: json)
 
 Traffic calculation as follows:
 
@@ -629,6 +648,8 @@ The following status information is provided in the JSON format:
       * The number of cache hit.
     * scarce
       * The number of cache scare.
+  * requestMsecCounter
+    * The number of accumulated request processing time in milliseconds.
   * requestMsec
     * The average of request processing times in milliseconds.
   * requestMsecs
@@ -636,6 +657,11 @@ The following status information is provided in the JSON format:
       * The times in milliseconds at request processing times.
     * msecs
       * The request processing times in milliseconds.
+  * requestBuckets
+    * msecs
+      * The bucket values of histogram set by `vhost_traffic_status_histogram_buckets` directive.
+    * counters
+      * The cumulative values for the reason that each bucket value is greater than or equal to the request processing time. 
 * filterZones
   * It provides the same fields with `serverZones` except that it included group names.
 * upstreamZones
@@ -650,6 +676,8 @@ The following status information is provided in the JSON format:
   * responses
     * 1xx, 2xx, 3xx, 4xx, 5xx
       * The number of responses with status codes 1xx, 2xx, 3xx, 4xx, and 5xx.
+  * requestMsecCounter
+    * The number of accumulated request processing time including upstream in milliseconds.
   * requestMsec
     * The average of request processing times including upstream in milliseconds.
   * requestMsecs
@@ -657,6 +685,13 @@ The following status information is provided in the JSON format:
       * The times in milliseconds at request processing times.
     * msecs
       * The request processing times including upstream in milliseconds.
+  * requestBuckets
+    * msecs
+      * The bucket values of histogram set by `vhost_traffic_status_histogram_buckets` directive.
+    * counters
+      * The cumulative values for the reason that each bucket value is greater than or equal to the request processing time including upstream.
+  * responseMsecCounter
+    * The number of accumulated only upstream response processing time in milliseconds.
   * responseMsec
     * The average of only upstream response processing times in milliseconds.
   * responseMsecs
@@ -664,6 +699,11 @@ The following status information is provided in the JSON format:
       * The times in milliseconds at request processing times.
     * msecs
       * The only upstream response processing times in milliseconds.
+  * responseBuckets
+    * msecs
+      * The bucket values of histogram set by `vhost_traffic_status_histogram_buckets` directive.
+    * counters
+      * The cumulative values for the reason that each bucket value is greater than or equal to the only upstream response processing time.
   * weight
     * Current `weight` setting of the server.
   * maxFails
@@ -752,6 +792,8 @@ The following embedded variables are provided:
   * The number of cache hit.
 * **$vts_cache_scarce_counter**
   * The number of cache scare.
+* **$vts_request_time_counter**
+  * The number of accumulated request processing time.
 * **$vts_request_time**
   * The average of request processing times.
 
@@ -1159,6 +1201,17 @@ If you set `vhost_traffic_status_zone` directive, is automatically enabled.
 
 `Description:` Sets parameters for a shared memory zone that will keep states for various keys.
 The cache is shared between all worker processes.
+In most cases, the shared memory size used by nginx-module-vts does not increase much.
+The shared memory size is increased pretty when using `vhost_traffic_status_filter_by_set_key`
+directive but if filter's keys are fixed(*eg. the total number of the country code is about 240*)
+it does not continuously increase.
+
+If you use `vhost_traffic_status_filter_by_set_key` directive, set it as follows:
+
+* Set to more than 32M shared memory size by default.
+(`vhost_traffic_status_zone shared:vhost_traffic_status:32m`)
+* If the message(*`"ngx_slab_alloc() failed: no memory in vhost_traffic_status_zone"`*)
+printed in error_log, increase to more than (usedSize * 2).
 
 ### vhost_traffic_status_dump
 
@@ -1187,7 +1240,7 @@ It is backed up immediately regardless of the backup cycle if nginx is exited by
 
 | -   | - |
 | --- | --- |
-| **Syntax**  | **vhost_traffic_status_display_format** \<json\|html\|jsonp\> |
+| **Syntax**  | **vhost_traffic_status_display_format** \<json\|html\|jsonp\|prometheus\> |
 | **Default** | json |
 | **Context** | http, server, location |
 
@@ -1195,6 +1248,7 @@ It is backed up immediately regardless of the backup cycle if nginx is exited by
 If you set `json`, will respond with a JSON document.
 If you set `html`, will respond with the built-in live dashboard in HTML.
 If you set `jsonp`, will respond with a JSONP callback function(default: *ngx_http_vhost_traffic_status_jsonp_callback*).
+If you set `prometheus`, will respond with a [prometheus](https://prometheus.io) document.
 
 ### vhost_traffic_status_display_jsonp
 
@@ -1320,7 +1374,12 @@ server {
                   "hit":...,
                   "scarce":...
               },
-              "requestMsec":...
+              "requestMsecCounter":...,
+              "requestMsec":...,
+              "requestMsecs":{
+                  "times":[...],
+                  "msecs":[...]
+              },
           },
           "US": {
           ...
@@ -1343,6 +1402,64 @@ server {
 
 `Description:` Enables or disables the deduplication of vhost_traffic_status_filter_by_set_key.
 It is processed only one of duplicate values(`key` + `name`) in each directives(http, server, location) if this option is enabled.
+
+### vhost_traffic_status_filter_max_node
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **vhost_traffic_status_filter_max_node** *number* [*string* ...] |
+| **Default** | 0 |
+| **Context** | http |
+
+`Description:` Enables the limit of filter size using the specified *number* and *string* values.
+If the *number* is exceeded, the existing nodes are deleted by the [LRU](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU) algorithm.
+The *number* argument is the size of the node that will be limited.
+The default value `0` does not limit filters.
+The one node is an object in `filterZones` in JSON document.
+The *string* arguments are the matching string values for the group string value set by `vhost_traffic_status_filter_by_set_key` directive. 
+Even if only the first part matches, matching is successful like the regular expression `/^string.*/`.
+By default, If you do not set *string* arguments then it applied for all filters.
+
+
+For examples:
+
+`$ vi nginx.conf`
+
+```Nginx
+http {
+
+    geoip_country /usr/share/GeoIP/GeoIP.dat;
+
+    vhost_traffic_status_zone;
+
+    # The all filters are limited to a total of 16 nodes.
+    # vhost_traffic_status_filter_max_node 16
+
+    # The `/^uris.*/` and `/^client::ports.*/` group string patterns are limited to a total of 64 nodes.
+    vhost_traffic_status_filter_max_node 16 uris client::ports
+
+    ...
+
+    server {
+
+        server_name example.org;
+
+        ...
+
+        vhost_traffic_status_filter_by_set_key $uri uris::$server_name;
+        vhost_traffic_status_filter_by_set_key $remote_port client::ports::$server_name;
+        vhost_traffic_status_filter_by_set_key $geoip_country_code country::$server_name;
+
+    }
+}
+```
+
+`$ for i in {0..1000}; do curl -H 'Host: example.org' -i "http://localhost:80/test$i"; done`
+
+![screenshot-vts-filter-max-node](https://user-images.githubusercontent.com/3648408/41475027-96c96136-70f8-11e8-8dd6-ed1825d7b216.png)
+
+In the above example, the `/^uris.*/` and `/^client::ports.*/` group string patterns are limited to a total of 16 nodes.
+The other filters like `country::.*` are not limited.
 
 ### vhost_traffic_status_limit
 
@@ -1510,8 +1627,12 @@ It can acquire almost all status values and the obtained value is stored in *$va
 * **name**
   * requestCounter
     * The total number of client requests received from clients.
+  * requestMsecCounter
+    * The number of accumulated request processing time in milliseconds.
   * requestMsec
     * The average of request processing times in milliseconds.
+  * responseMsecCounter
+    * The number of accumulated only upstream response processing time in milliseconds.
   * responseMsec
     * The average of only upstream response processing times in milliseconds.
   * inBytes
@@ -1583,6 +1704,33 @@ The corresponding values are `requestMsec` and `responseMsec` in JSON.
   * The AMM is the [arithmetic mean](https://en.wikipedia.org/wiki/Arithmetic_mean).
 * **WMA**
   * THE WMA is the [weighted moving average](https://en.wikipedia.org/wiki/Moving_average#Weighted_moving_average).
+
+### vhost_traffic_status_histogram_buckets
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **vhost_traffic_status_histogram_buckets** *second* ... |
+| **Default** | - |
+| **Context** | http, server, location |
+
+`Description:` Sets the observe buckets to be used in the histograms.
+By default, if you do not set this directive, it will not work.
+The *second* can be expressed in decimal places with a minimum value of 0.001(1ms).
+The maximum size of the buckets is 32. If this value is insufficient for you,
+change the `NGX_HTTP_VHOST_TRAFFIC_STATUS_DEFAULT_BUCKET_LEN` in the `src/ngx_http_vhost_traffic_status_node.h`
+
+For examples:
+* **vhost_traffic_status_histogram_buckets** `0.005` `0.01` `0.05` `0.1` `0.5` `1` `5` `10`
+  * The observe buckets are [5ms 10ms 50ms 1s 5s 10s].
+* **vhost_traffic_status_histogram_buckets** `0.005` `0.01` `0.05` `0.1`
+  * The observe buckets are [5ms 10ms 50ms 1s].
+
+`Caveats:` By default, if you do not set this directive, the histogram statistics does not work.
+The restored histograms by `vhost_traffic_status_dump` directive have no affected by changes to the buckets
+by `vhost_traffic_status_histogram_buckets` directive.
+So you must first delete the zone or the dump file before changing the buckets
+by `vhost_traffic_status_histogram_buckets` directive.
+Similar to the above, delete the dump file when using the histogram for the first time.
 
 ### vhost_traffic_status_bypass_limit
 
@@ -1659,7 +1807,6 @@ http {
   * [nginx-module-sysguard](https://github.com/vozlt/nginx-module-sysguard)
 
 ## TODO
-* Add support for implementing accumulated request processing time.
 
 ## Donation
 [![License](http://img.shields.io/badge/PAYPAL-DONATE-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PWWSYKQ9VKH38&lc=KR&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)

@@ -28,6 +28,7 @@ ngx_http_vhost_traffic_status_shm_info_node(ngx_http_request_t *r,
     ngx_http_vhost_traffic_status_shm_info_t *shm_info,
     ngx_rbtree_node_t *node)
 {
+    ngx_str_t                              filter;
     ngx_uint_t                             size;
     ngx_http_vhost_traffic_status_ctx_t   *ctx;
     ngx_http_vhost_traffic_status_node_t  *vtsn;
@@ -43,6 +44,18 @@ ngx_http_vhost_traffic_status_shm_info_node(ngx_http_request_t *r,
 
         shm_info->used_size += size;
         shm_info->used_node++;
+
+        if (vtsn->stat_upstream.type == NGX_HTTP_VHOST_TRAFFIC_STATUS_UPSTREAM_FG) {
+            filter.data = vtsn->data;
+            filter.len = vtsn->len;
+
+            (void) ngx_http_vhost_traffic_status_node_position_key(&filter, 1);
+
+            if (ngx_http_vhost_traffic_status_filter_max_node_match(r, &filter) == NGX_OK) {
+                shm_info->filter_used_size += size;
+                shm_info->filter_used_node++;
+            }
+        }
 
         ngx_http_vhost_traffic_status_shm_info_node(r, shm_info, node->left);
         ngx_http_vhost_traffic_status_shm_info_node(r, shm_info, node->right);
@@ -75,7 +88,7 @@ ngx_http_vhost_traffic_status_shm_add_node(ngx_http_request_t *r,
     unsigned                                   init;
     uint32_t                                   hash;
     ngx_slab_pool_t                           *shpool;
-    ngx_rbtree_node_t                         *node;
+    ngx_rbtree_node_t                         *node, *lrun;
     ngx_http_vhost_traffic_status_ctx_t       *ctx;
     ngx_http_vhost_traffic_status_node_t      *vtsn;
     ngx_http_vhost_traffic_status_loc_conf_t  *vtscf;
@@ -101,6 +114,14 @@ ngx_http_vhost_traffic_status_shm_add_node(ngx_http_request_t *r,
     /* set common */
     if (node == NULL) {
         init = NGX_HTTP_VHOST_TRAFFIC_STATUS_NODE_NONE;
+
+        /* delete lru node */
+        lrun = ngx_http_vhost_traffic_status_find_lru(r);
+        if (lrun != NULL) {
+            ngx_rbtree_delete(ctx->rbtree, lrun);
+            ngx_slab_free_locked(shpool, lrun);
+        }
+
         size = offsetof(ngx_rbtree_node_t, color)
                + offsetof(ngx_http_vhost_traffic_status_node_t, data)
                + key->len;
@@ -172,22 +193,33 @@ ngx_http_vhost_traffic_status_shm_add_node_upstream(ngx_http_request_t *r,
     ngx_http_vhost_traffic_status_node_t *vtsn, unsigned init)
 {
     ngx_msec_int_t                             ms;
+    ngx_http_vhost_traffic_status_node_t       ovtsn;
     ngx_http_vhost_traffic_status_loc_conf_t  *vtscf;
 
     vtscf = ngx_http_get_module_loc_conf(r, ngx_http_vhost_traffic_status_module);
 
+    ovtsn = *vtsn;
     ms = ngx_http_vhost_traffic_status_upstream_response_time(r);
 
     ngx_http_vhost_traffic_status_node_time_queue_insert(&vtsn->stat_upstream.response_times,
                                                          ms);
+    ngx_http_vhost_traffic_status_node_histogram_observe(&vtsn->stat_upstream.response_buckets,
+                                                         ms);
 
     if (init == NGX_HTTP_VHOST_TRAFFIC_STATUS_NODE_NONE) {
+        vtsn->stat_upstream.response_time_counter = (ngx_atomic_uint_t) ms;
         vtsn->stat_upstream.response_time = (ngx_msec_t) ms;
 
     } else {
+        vtsn->stat_upstream.response_time_counter += (ngx_atomic_uint_t) ms;
         vtsn->stat_upstream.response_time = ngx_http_vhost_traffic_status_node_time_queue_average(
                                                 &vtsn->stat_upstream.response_times,
                                                 vtscf->average_method, vtscf->average_period);
+
+        if (ovtsn.stat_upstream.response_time_counter > vtsn->stat_upstream.response_time_counter)
+        { 
+            vtsn->stat_response_time_counter_oc++;
+        }
     }
 
     return NGX_OK;

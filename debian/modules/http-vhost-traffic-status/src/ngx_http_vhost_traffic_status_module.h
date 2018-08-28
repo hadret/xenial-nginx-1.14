@@ -33,6 +33,7 @@
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_FORMAT_JSON          1
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_FORMAT_HTML          2
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_FORMAT_JSONP         3
+#define NGX_HTTP_VHOST_TRAFFIC_STATUS_FORMAT_PROMETHEUS    4
 
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_AVERAGE_METHOD_AMM   0
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_AVERAGE_METHOD_WMA   1
@@ -43,188 +44,6 @@
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_DEFAULT_SUM_KEY      "*"
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_DEFAULT_AVG_PERIOD   60
 #define NGX_HTTP_VHOST_TRAFFIC_STATUS_DEFAULT_DUMP_PERIOD  60
-
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_S           "{"
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_OBJECT_S    "\"%V\":{"
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_ARRAY_S     "\"%V\":["
-
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_ARRAY_E     "]"
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_OBJECT_E    "}"
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_E           "}"
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_NEXT        ","
-
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_MAIN "\"hostName\":\"%V\","     \
-    "\"nginxVersion\":\"%s\","                                                 \
-    "\"loadMsec\":%M,"                                                         \
-    "\"nowMsec\":%M,"                                                          \
-    "\"connections\":{"                                                        \
-    "\"active\":%uA,"                                                          \
-    "\"reading\":%uA,"                                                         \
-    "\"writing\":%uA,"                                                         \
-    "\"waiting\":%uA,"                                                         \
-    "\"accepted\":%uA,"                                                        \
-    "\"handled\":%uA,"                                                         \
-    "\"requests\":%uA"                                                         \
-    "},"                                                                       \
-    "\"sharedZones\":{"                                                        \
-    "\"name\":\"%V\","                                                         \
-    "\"maxSize\":%ui,"                                                         \
-    "\"usedSize\":%ui,"                                                        \
-    "\"usedNode\":%ui"                                                         \
-    "},"
-
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_SERVER_S "\"serverZones\":{"
-
-#if (NGX_HTTP_CACHE)
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_SERVER "\"%V\":{"               \
-    "\"requestCounter\":%uA,"                                                  \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"responses\":{"                                                          \
-    "\"1xx\":%uA,"                                                             \
-    "\"2xx\":%uA,"                                                             \
-    "\"3xx\":%uA,"                                                             \
-    "\"4xx\":%uA,"                                                             \
-    "\"5xx\":%uA,"                                                             \
-    "\"miss\":%uA,"                                                            \
-    "\"bypass\":%uA,"                                                          \
-    "\"expired\":%uA,"                                                         \
-    "\"stale\":%uA,"                                                           \
-    "\"updating\":%uA,"                                                        \
-    "\"revalidated\":%uA,"                                                     \
-    "\"hit\":%uA,"                                                             \
-    "\"scarce\":%uA"                                                           \
-    "},"                                                                       \
-    "\"requestMsec\":%M,"                                                      \
-    "\"requestMsecs\":{"                                                       \
-    "\"times\":[%s],"                                                          \
-    "\"msecs\":[%s]"                                                           \
-    "},"                                                                       \
-    "\"overCounts\":{"                                                         \
-    "\"maxIntegerSize\":%s,"                                                   \
-    "\"requestCounter\":%uA,"                                                  \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"1xx\":%uA,"                                                             \
-    "\"2xx\":%uA,"                                                             \
-    "\"3xx\":%uA,"                                                             \
-    "\"4xx\":%uA,"                                                             \
-    "\"5xx\":%uA,"                                                             \
-    "\"miss\":%uA,"                                                            \
-    "\"bypass\":%uA,"                                                          \
-    "\"expired\":%uA,"                                                         \
-    "\"stale\":%uA,"                                                           \
-    "\"updating\":%uA,"                                                        \
-    "\"revalidated\":%uA,"                                                     \
-    "\"hit\":%uA,"                                                             \
-    "\"scarce\":%uA"                                                           \
-    "}"                                                                        \
-    "},"
-#else
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_SERVER "\"%V\":{"               \
-    "\"requestCounter\":%uA,"                                                  \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"responses\":{"                                                          \
-    "\"1xx\":%uA,"                                                             \
-    "\"2xx\":%uA,"                                                             \
-    "\"3xx\":%uA,"                                                             \
-    "\"4xx\":%uA,"                                                             \
-    "\"5xx\":%uA"                                                              \
-    "},"                                                                       \
-    "\"requestMsec\":%M,"                                                      \
-    "\"requestMsecs\":{"                                                       \
-    "\"times\":[%s],"                                                          \
-    "\"msecs\":[%s]"                                                           \
-    "},"                                                                       \
-    "\"overCounts\":{"                                                         \
-    "\"maxIntegerSize\":%s,"                                                   \
-    "\"requestCounter\":%uA,"                                                  \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"1xx\":%uA,"                                                             \
-    "\"2xx\":%uA,"                                                             \
-    "\"3xx\":%uA,"                                                             \
-    "\"4xx\":%uA,"                                                             \
-    "\"5xx\":%uA"                                                              \
-    "}"                                                                        \
-    "},"
-#endif
-
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_FILTER_S "\"filterZones\":{"
-
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_UPSTREAM_S "\"upstreamZones\":{"
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_UPSTREAM "{\"server\":\"%V\","  \
-    "\"requestCounter\":%uA,"                                                  \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"responses\":{"                                                          \
-    "\"1xx\":%uA,"                                                             \
-    "\"2xx\":%uA,"                                                             \
-    "\"3xx\":%uA,"                                                             \
-    "\"4xx\":%uA,"                                                             \
-    "\"5xx\":%uA"                                                              \
-    "},"                                                                       \
-    "\"requestMsec\":%M,"                                                      \
-    "\"requestMsecs\":{"                                                       \
-    "\"times\":[%s],"                                                          \
-    "\"msecs\":[%s]"                                                           \
-    "},"                                                                       \
-    "\"responseMsec\":%M,"                                                     \
-    "\"responseMsecs\":{"                                                      \
-    "\"times\":[%s],"                                                          \
-    "\"msecs\":[%s]"                                                           \
-    "},"                                                                       \
-    "\"weight\":%ui,"                                                          \
-    "\"maxFails\":%ui,"                                                        \
-    "\"failTimeout\":%T,"                                                      \
-    "\"backup\":%s,"                                                           \
-    "\"down\":%s,"                                                             \
-    "\"overCounts\":{"                                                         \
-    "\"maxIntegerSize\":%s,"                                                   \
-    "\"requestCounter\":%uA,"                                                  \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"1xx\":%uA,"                                                             \
-    "\"2xx\":%uA,"                                                             \
-    "\"3xx\":%uA,"                                                             \
-    "\"4xx\":%uA,"                                                             \
-    "\"5xx\":%uA"                                                              \
-    "}"                                                                        \
-    "},"
-
-#if (NGX_HTTP_CACHE)
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_CACHE_S "\"cacheZones\":{"
-#define NGX_HTTP_VHOST_TRAFFIC_STATUS_JSON_FMT_CACHE "\"%V\":{"                \
-    "\"maxSize\":%uA,"                                                         \
-    "\"usedSize\":%uA,"                                                        \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"responses\":{"                                                          \
-    "\"miss\":%uA,"                                                            \
-    "\"bypass\":%uA,"                                                          \
-    "\"expired\":%uA,"                                                         \
-    "\"stale\":%uA,"                                                           \
-    "\"updating\":%uA,"                                                        \
-    "\"revalidated\":%uA,"                                                     \
-    "\"hit\":%uA,"                                                             \
-    "\"scarce\":%uA"                                                           \
-    "},"                                                                       \
-    "\"overCounts\":{"                                                         \
-    "\"maxIntegerSize\":%s,"                                                   \
-    "\"inBytes\":%uA,"                                                         \
-    "\"outBytes\":%uA,"                                                        \
-    "\"miss\":%uA,"                                                            \
-    "\"bypass\":%uA,"                                                          \
-    "\"expired\":%uA,"                                                         \
-    "\"stale\":%uA,"                                                           \
-    "\"updating\":%uA,"                                                        \
-    "\"revalidated\":%uA,"                                                     \
-    "\"hit\":%uA,"                                                             \
-    "\"scarce\":%uA"                                                           \
-    "}"                                                                        \
-    "},"
-#endif
 
 #define ngx_http_vhost_traffic_status_add_rc(s, n) {                           \
     if(s < 200) {n->stat_1xx_counter++;}                                       \
@@ -303,6 +122,9 @@
     if (o->stat_5xx_counter > c->stat_5xx_counter) {                           \
         c->stat_5xx_counter_oc++;                                              \
     }                                                                          \
+    if (o->stat_request_time_counter > c->stat_request_time_counter) {         \
+        c->stat_request_time_counter_oc++;                                     \
+    }                                                                          \
     if (o->stat_cache_miss_counter > c->stat_cache_miss_counter) {             \
         c->stat_cache_miss_counter_oc++;                                       \
     }                                                                          \
@@ -355,6 +177,9 @@
     if (o->stat_5xx_counter > c->stat_5xx_counter) {                           \
         c->stat_5xx_counter_oc++;                                              \
     }                                                                          \
+    if (o->stat_request_time_counter > c->stat_request_time_counter) {         \
+        c->stat_request_time_counter_oc++;                                     \
+    }                                                                          \
 }
 #endif
 
@@ -405,6 +230,11 @@ typedef struct {
     /* array of ngx_http_vhost_traffic_status_limit_t */
     ngx_array_t                            *limit_filter_traffics;
 
+    /* array of ngx_http_vhost_traffic_status_filter_match_t */
+    ngx_array_t                            *filter_max_node_matches;
+
+    ngx_uint_t                              filter_max_node;
+
     ngx_flag_t                              enable;
     ngx_flag_t                              filter_check_duplicate;
     ngx_flag_t                              limit_check_duplicate;
@@ -450,6 +280,9 @@ typedef struct {
 
     ngx_flag_t                              average_method;
     ngx_msec_t                              average_period;
+
+    /* array of ngx_http_vhost_traffic_status_node_histogram_t */
+    ngx_array_t                            *histogram_buckets;
 
     ngx_flag_t                              bypass_limit;
     ngx_flag_t                              bypass_stats;
