@@ -1,9 +1,10 @@
-nginx (1.14.0-2xenial5) xenial; urgency=medium
+nginx (1.14.0-2xenial6) xenial; urgency=medium
 
   * Non-maintainer upload.
   * Switch to release v2.1.0 for upsync module.
   * Sync latest commit from master for upstream check module.
   * Bump up vts to 0.1.18 release.
+  * Fix debhelper version (9 for Xenial).
 
  -- Filip Chabik <hadret@gmail.com>  Tue, 28 Aug 2018 11:32:21 +0200
 
