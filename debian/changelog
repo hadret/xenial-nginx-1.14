@@ -1,6 +1,13 @@
-nginx (1.14.0-2xenial6) xenial; urgency=medium
+nginx (1.14.2-1xenial0) xenial; urgency=medium
 
   * Non-maintainer upload.
+  * New upstream version 1.14.2
+  * Fix debian/watch source default to version 1.14.
+
+ -- Filip Chabik <hadret@gmail.com>  Sun, 23 Dec 2018 15:54:27 +0000
+
+nginx (1.14.0-2xenial6) xenial; urgency=medium
+
   * Switch to release v2.1.0 for upsync module.
   * Sync latest commit from master for upstream check module.
   * Bump up vts to 0.1.18 release.
