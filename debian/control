@@ -474,3 +474,13 @@ Description: stream server traffic status module for Nginx
  server stats and
  . 
  This package provides second module necessary to run STS.
+
+Package: libnginx-mod-pagespeed
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: modpagespeed support for Nginx
+ The nginx PageSpeed improves web page latency by changing the resources on
+ that web page to implement web performance best practices.
+ .
+ The PageSpeed Modules, mod_pagespeed and ngx_pagespeed, are open-source
+ webserver modules that optimize your site automatically.
