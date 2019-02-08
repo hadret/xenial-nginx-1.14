@@ -1,6 +1,12 @@
-nginx (1.14.2-1xenial0) xenial; urgency=medium
+nginx (1.14.2-2xenial0) xenial; urgency=medium
 
   * Non-maintainer upload.
+  * Replace built-in geoip with third-party geoip2.
+
+ -- Filip Chabik <hadret@gmail.com>  Fri, 08 Feb 2019 10:13:59 +0000
+
+nginx (1.14.2-1xenial0) xenial; urgency=medium
+
   * New upstream version 1.14.2
   * Fix debian/watch source default to version 1.14.
 

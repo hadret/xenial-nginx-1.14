@@ -13,7 +13,7 @@ DYN_MODS := \
 	http-dav-ext \
 	http-echo \
 	http-fancyindex \
-	http-geoip \
+	http-geoip2 \
 	http-headers-more-filter \
 	http-image-filter \
 	http-lua \
@@ -90,7 +90,6 @@ light_configure_flags := \
 core_configure_flags := \
                         $(common_configure_flags) \
                         --with-http_addition_module \
-                        --with-http_geoip_module=dynamic \
                         --with-http_gunzip_module \
                         --with-http_gzip_static_module \
                         --with-http_image_filter_module=dynamic \
@@ -99,12 +98,12 @@ core_configure_flags := \
                         --with-stream=dynamic \
                         --with-stream_ssl_module \
                         --with-mail=dynamic \
-                        --with-mail_ssl_module
+                        --with-mail_ssl_module \
+                        --add-dynamic-module=$(MODULESDIR)/http-geoip2
 
 full_configure_flags := \
 			$(common_configure_flags) \
 			--with-http_addition_module \
-			--with-http_geoip_module=dynamic \
 			--with-http_gunzip_module \
 			--with-http_gzip_static_module \
 			--with-http_image_filter_module=dynamic \
@@ -121,6 +120,7 @@ full_configure_flags := \
 			--add-dynamic-module=$(MODULESDIR)/http-auth-pam \
 			--add-dynamic-module=$(MODULESDIR)/http-dav-ext \
 			--add-dynamic-module=$(MODULESDIR)/http-echo \
+			--add-dynamic-module=$(MODULESDIR)/http-geoip2 \
 			--add-dynamic-module=$(MODULESDIR)/http-upstream-fair \
 			--add-dynamic-module=$(MODULESDIR)/http-subs-filter \
 			--add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status
@@ -129,7 +129,6 @@ extras_configure_flags := \
 			$(common_configure_flags) \
 			--with-http_addition_module \
 			--with-http_flv_module \
-			--with-http_geoip_module=dynamic \
 			--with-http_gunzip_module \
 			--with-http_gzip_static_module \
 			--with-http_image_filter_module=dynamic \
@@ -154,6 +153,7 @@ extras_configure_flags := \
 			--add-dynamic-module=$(MODULESDIR)/http-ndk \
 			--add-dynamic-module=$(MODULESDIR)/http-echo \
 			--add-dynamic-module=$(MODULESDIR)/http-fancyindex \
+			--add-dynamic-module=$(MODULESDIR)/http-geoip2 \
 			--add-dynamic-module=$(MODULESDIR)/nchan \
 			--add-dynamic-module=$(MODULESDIR)/http-lua \
 			--add-dynamic-module=$(MODULESDIR)/rtmp \
