@@ -80,3 +80,7 @@ Version: master
 Module: http-upstream-check
 Homepage: https://github.com/xiaokai-wang/nginx_upstream_check_module
 Version: 219131a
+
+Module: http-geoip2
+Homepage: https://github.com/leev/ngx_http_geoip2_module
+Version: 3.2
