@@ -62,7 +62,7 @@ ngx_http_lua_rewrite_handler(ngx_http_request_t *r)
 #endif
 
         if (cur_ph < last_ph) {
-            dd("swaping the contents of cur_ph and last_ph...");
+            dd("swapping the contents of cur_ph and last_ph...");
 
             tmp      = *cur_ph;
 
@@ -110,7 +110,7 @@ ngx_http_lua_rewrite_handler(ngx_http_request_t *r)
             if (r->header_sent) {
                 dd("header already sent");
 
-                /* response header was already generated in access_by_lua*,
+                /* response header was already generated in rewrite_by_lua*,
                  * so it is no longer safe to proceed to later phases
                  * which may generate responses again */
 
@@ -126,6 +126,11 @@ ngx_http_lua_rewrite_handler(ngx_http_request_t *r)
 
                 return NGX_HTTP_OK;
             }
+
+            r->write_event_handler = ngx_http_core_run_phases;
+            ctx->entered_rewrite_phase = 0;
+
+            return NGX_DECLINED;
         }
 
         return rc;
@@ -256,9 +261,11 @@ ngx_http_lua_rewrite_by_chunk(lua_State *L, ngx_http_request_t *r)
     /*  move code closure to new coroutine */
     lua_xmove(L, co, 1);
 
+#ifndef OPENRESTY_LUAJIT
     /*  set closure's env table to new coroutine's globals table */
     ngx_http_lua_get_globals_table(co);
     lua_setfenv(co, -2);
+#endif
 
     /*  save nginx request in coroutine globals table */
     ngx_http_lua_set_req(co, r);
@@ -346,7 +353,7 @@ ngx_http_lua_rewrite_by_chunk(lua_State *L, ngx_http_request_t *r)
         if (r->header_sent) {
             dd("header already sent");
 
-            /* response header was already generated in access_by_lua*,
+            /* response header was already generated in rewrite_by_lua*,
              * so it is no longer safe to proceed to later phases
              * which may generate responses again */
 
@@ -362,6 +369,9 @@ ngx_http_lua_rewrite_by_chunk(lua_State *L, ngx_http_request_t *r)
 
             return NGX_HTTP_OK;
         }
+
+        r->write_event_handler = ngx_http_core_run_phases;
+        ctx->entered_rewrite_phase = 0;
 
         return NGX_DECLINED;
     }

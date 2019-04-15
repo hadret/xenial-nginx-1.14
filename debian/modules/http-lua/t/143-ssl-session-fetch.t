@@ -33,7 +33,7 @@ __DATA__
         server_name   test.com;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -119,7 +119,7 @@ ssl_session_fetch_by_lua_block:1: ssl fetch sess by lua is running!,
         server_name   test.com;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -203,7 +203,7 @@ qr/elapsed in ssl fetch session by lua: 0.(?:09|1[01])\d+,/,
         server_name   test.com;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -302,9 +302,9 @@ qr/my timer run!/s
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name   test.com;
-        ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -382,9 +382,9 @@ qr/received memc reply: OK/s
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -463,9 +463,9 @@ should never reached here
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -545,9 +545,9 @@ should never reached here
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -626,9 +626,9 @@ should never reached here
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -709,9 +709,9 @@ should never reached here
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -792,7 +792,7 @@ should never reached here
         server_name   test.com;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -877,7 +877,7 @@ qr/get_phase: ssl_session_fetch/s
         }
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -961,7 +961,7 @@ ssl store session by lua is running!
         server_name   test.com;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -1041,7 +1041,7 @@ qr/\S+:\d+: ssl fetch sess by lua is running!/s
         server_name   test.com;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
 
         server_tokens off;
     }
@@ -1110,6 +1110,111 @@ qr/ssl_session_fetch_by_lua_block:1: ssl fetch sess by lua is running!/s
 ',
 ]
 
+--- no_error_log
+[error]
+[alert]
+[emerg]
+
+
+
+=== TEST 14: keep global variable in ssl_session_(store|fetch)_by_lua when OpenResty LuaJIT is used
+--- http_config
+    ssl_session_store_by_lua_block {
+        ngx.log(ngx.WARN, "new foo: ", foo)
+        if not foo then
+            foo = 1
+        else
+            ngx.log(ngx.WARN, "old foo: ", foo)
+            foo = foo + 1
+        end
+    }
+    ssl_session_fetch_by_lua_block {
+        ngx.log(ngx.WARN, "new bar: ", foo)
+        if not bar then
+            bar = 1
+        else
+            ngx.log(ngx.WARN, "old bar: ", bar)
+            bar = bar + 1
+        end
+    }
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+        ssl_session_tickets off;
+
+        server_tokens off;
+        location /foo {
+            content_by_lua_block {
+                ngx.say("foo: ", foo)
+                ngx.say("bar: ", bar)
+            }
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(2000)
+
+                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                local sess, err = sock:sslhandshake(package.loaded.session, "test.com", true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                package.loaded.session = sess
+
+                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
+                local bytes, err = sock:send(req)
+                if not bytes then
+                    ngx.say("failed to send http request: ", err)
+                    return
+                end
+
+                while true do
+                    local line, err = sock:receive()
+                    if not line then
+                        -- ngx.say("failed to receive response status line: ", err)
+                        break
+                    end
+
+                    local m, err = ngx.re.match(line, "^foo: (.*)$", "jo")
+                    if err then
+                        ngx.say("failed to match line: ", err)
+                    end
+
+                    if m and m[1] then
+                        ngx.print(m[1])
+                    end
+                end
+
+                local ok, err = sock:close()
+                ngx.say("done")
+            end  -- do
+        }
+    }
+
+--- request
+GET /t
+--- response_body_like chomp
+\A[123]done\n\z
+--- grep_error_log eval: qr/old (foo|bar): \d+/
+--- grep_error_log_out eval
+["", "old foo: 1\n", "old bar: 1\nold foo: 2\n"]
 --- no_error_log
 [error]
 [alert]

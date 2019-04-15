@@ -12,39 +12,38 @@ cache:
 env:
   global:
     - JOBS=4
-    - NGINX_VERSION=1.12.0
     - NGINX_PREFIX=/opt/nginx
-    - OPENSSL_PREFIX=/opt/ssl
-    - OPENSSL_LIB=$OPENSSL_PREFIX/lib
-    - OPENSSL_INC=$OPENSSL_PREFIX/include
-    - OPENSSL_VER=1.0.2k
+  matrix:
+    - NGINX_VERSION=1.14.0
+    - NGINX_VERSION=1.15.2
 
 before_install:
-  - sudo apt-get install -qq -y cpanminus
+  - mkdir --parents download-cache
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq zlib1g-dev libpcre3-dev cpanminus
+  # Get OpenSSL 1.0.2 from Ubuntu Xenial
+  # https://packages.ubuntu.com/xenial-updates/libssl1.0.0
+  - test -f download-cache/libssl1.0.0_1.0.2g-1ubuntu4.13_amd64.deb || wget -O download-cache/libssl1.0.0_1.0.2g-1ubuntu4.13_amd64.deb "http://de.archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.0.0_1.0.2g-1ubuntu4.13_amd64.deb"
+  # https://packages.ubuntu.com/xenial/libssl-dev
+  - test -f download-cache/libssl-dev_1.0.2g-1ubuntu4.13_amd64.deb || wget -O download-cache/libssl-dev_1.0.2g-1ubuntu4.13_amd64.deb "http://de.archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.0.2g-1ubuntu4.13_amd64.deb"
+  - sudo dpkg -i download-cache/libssl*_amd64.deb
+  # Test::Nginx
+  - git clone https://github.com/openresty/test-nginx.git test-nginx
+  - cd test-nginx/ && sudo cpanm . && cd ..
+  # NGINX source
+  - test -f download-cache/nginx-$NGINX_VERSION.tar.gz || wget -O download-cache/nginx-$NGINX_VERSION.tar.gz http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz
 
 install:
-  - if [ ! -d /opt ]; then mkdir /opt; fi
-  - if [ ! -d download-cache ]; then mkdir download-cache; fi
-  - if [ ! -f download-cache/nginx-$NGINX_VERSION.tar.gz ]; then wget -O download-cache/nginx-$NGINX_VERSION.tar.gz http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz; fi
-  - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -O download-cache/openssl-$OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz; fi
-  - git clone https://github.com/openresty/test-nginx.git
+  - tar -xzf download-cache/nginx-${NGINX_VERSION}.tar.gz
+  - cd nginx-${NGINX_VERSION}/
+  - ./configure --prefix=${NGINX_PREFIX} --with-debug --with-http_ssl_module --add-module=${PWD}/..
+  - make -j${JOBS}
+  - sudo make install
+  - cd ..
+  - export PATH="${NGINX_PREFIX}/sbin:$PATH"
+#  - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 
 script:
-  - cd test-nginx/ && sudo cpanm . && cd ..
-  - tar zxf download-cache/openssl-$OPENSSL_VER.tar.gz
-  - cd openssl-$OPENSSL_VER/
-  - ./config shared --prefix=$OPENSSL_PREFIX -DPURIFY > build.log 2>&1 || (cat build.log && exit 1)
-  - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
-  - sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1)
-  - cd ..
-  - tar zxf download-cache/nginx-$NGINX_VERSION.tar.gz
-  - cd nginx-$NGINX_VERSION/
-  - ./configure --prefix=$NGINX_PREFIX --with-debug --add-module=$PWD/.. > build.log 2>&1 || (cat build.log && exit 1)
-  - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
-  - sudo make install > build.log 2>&1 || (cat build.log && exit 1)
-  - cd ..
-  - export PATH=$NGINX_PREFIX/sbin:$PATH
-#  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
   - nginx -V
-  - ldd `which nginx`
+  - ldd $(which nginx)
   - prove t

@@ -136,8 +136,25 @@ ngx_http_lua_ffi_worker_count(void)
 
 
 int
+ngx_http_lua_ffi_master_pid(void)
+{
+#if (nginx_version >= 1013008)
+    if (ngx_process == NGX_PROCESS_SINGLE) {
+        return (int) ngx_pid;
+    }
+
+    return (int) ngx_parent;
+#else
+    return NGX_ERROR;
+#endif
+}
+
+
+int
 ngx_http_lua_ffi_get_process_type(void)
 {
+    ngx_core_conf_t  *ccf;
+
 #if defined(HAVE_PRIVILEGED_PROCESS_PATCH) && !NGX_WIN32
     if (ngx_process == NGX_PROCESS_HELPER) {
         if (ngx_is_privileged_agent) {
@@ -145,6 +162,15 @@ ngx_http_lua_ffi_get_process_type(void)
         }
     }
 #endif
+
+    if (ngx_process == NGX_PROCESS_SINGLE) {
+        ccf = (ngx_core_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
+                                               ngx_core_module);
+
+        if (ccf->master) {
+            return NGX_PROCESS_MASTER;
+        }
+    }
 
     return ngx_process;
 }

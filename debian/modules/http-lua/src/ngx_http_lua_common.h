@@ -17,7 +17,7 @@
 #include <setjmp.h>
 #include <stdint.h>
 
-#include <lua.h>
+#include <luajit.h>
 #include <lualib.h>
 #include <lauxlib.h>
 
@@ -54,6 +54,9 @@
 #   define NGX_HTTP_LUA_USE_OCSP 1
 #endif
 
+#ifndef NGX_HTTP_PERMANENT_REDIRECT
+#   define NGX_HTTP_PERMANENT_REDIRECT  308
+#endif
 
 #ifndef NGX_HAVE_SHA1
 #   if (nginx_version >= 1011002)
@@ -79,20 +82,20 @@
 
 #define NGX_HTTP_LUA_INLINE_TAG "nhli_"
 
-#define NGX_HTTP_LUA_INLINE_TAG_LEN \
+#define NGX_HTTP_LUA_INLINE_TAG_LEN                                          \
     (sizeof(NGX_HTTP_LUA_INLINE_TAG) - 1)
 
-#define NGX_HTTP_LUA_INLINE_KEY_LEN \
+#define NGX_HTTP_LUA_INLINE_KEY_LEN                                          \
     (NGX_HTTP_LUA_INLINE_TAG_LEN + 2 * MD5_DIGEST_LENGTH)
 
 /* Nginx HTTP Lua File tag prefix */
 
 #define NGX_HTTP_LUA_FILE_TAG "nhlf_"
 
-#define NGX_HTTP_LUA_FILE_TAG_LEN \
+#define NGX_HTTP_LUA_FILE_TAG_LEN                                            \
     (sizeof(NGX_HTTP_LUA_FILE_TAG) - 1)
 
-#define NGX_HTTP_LUA_FILE_KEY_LEN \
+#define NGX_HTTP_LUA_FILE_KEY_LEN                                            \
     (NGX_HTTP_LUA_FILE_TAG_LEN + 2 * MD5_DIGEST_LENGTH)
 
 
@@ -137,6 +140,15 @@ typedef struct {
 #endif
 
 
+#if (NGX_PTR_SIZE >= 8 && !defined(_WIN64))
+#define ngx_http_lua_lightudata_mask(ludata)                                 \
+    ((void *) ((uintptr_t) (&ngx_http_lua_##ludata) & ((1UL << 47) - 1)))
+
+#else
+#define ngx_http_lua_lightudata_mask(ludata)    (&ngx_http_lua_##ludata)
+#endif
+
+
 typedef struct ngx_http_lua_main_conf_s  ngx_http_lua_main_conf_t;
 typedef union ngx_http_lua_srv_conf_u  ngx_http_lua_srv_conf_t;
 
@@ -162,6 +174,7 @@ typedef struct {
 
 struct ngx_http_lua_main_conf_s {
     lua_State           *lua;
+    ngx_pool_cleanup_t  *vm_cleanup;
 
     ngx_str_t            lua_path;
     ngx_str_t            lua_cpath;
@@ -204,9 +217,31 @@ struct ngx_http_lua_main_conf_s {
     ngx_str_t                            init_worker_src;
 
     ngx_http_lua_balancer_peer_data_t      *balancer_peer_data;
-                    /* balancer_by_lua does not support yielding and
-                     * there cannot be any conflicts among concurrent requests,
-                     * thus it is safe to store the peer data in the main conf.
+                    /* neither yielding nor recursion is possible in
+                     * balancer_by_lua*, so there cannot be any races among
+                     * concurrent requests and it is safe to store the peer
+                     * data pointer in the main conf.
+                     */
+
+    ngx_chain_t                            *body_filter_chain;
+                    /* neither yielding nor recursion is possible in
+                     * body_filter_by_lua*, so there cannot be any races among
+                     * concurrent requests when storing the chain
+                     * data pointer in the main conf.
+                     */
+
+    ngx_http_variable_value_t              *setby_args;
+                    /* neither yielding nor recursion is possible in
+                     * set_by_lua*, so there cannot be any races among
+                     * concurrent requests when storing the args pointer
+                     * in the main conf.
+                     */
+
+    size_t                                  setby_nargs;
+                    /* neither yielding nor recursion is possible in
+                     * set_by_lua*, so there cannot be any races among
+                     * concurrent requests when storing the nargs in the
+                     * main conf.
                      */
 
     ngx_uint_t                      shm_zones_inited;
@@ -222,6 +257,10 @@ struct ngx_http_lua_main_conf_s {
     ngx_buf_t          **busy_buf_ptrs;
     ngx_int_t            busy_buf_ptr_count;
 #endif
+
+    ngx_int_t            host_var_index;
+
+    ngx_flag_t           set_sa_restart;
 
     unsigned             requires_header_filter:1;
     unsigned             requires_body_filter:1;
@@ -527,6 +566,8 @@ typedef struct ngx_http_lua_ctx_s {
 
     unsigned         headers_set:1; /* whether the user has set custom
                                        response headers */
+    unsigned         mime_set:1;    /* whether the user has set Content-Type
+                                       response header */
 
     unsigned         entered_rewrite_phase:1;
     unsigned         entered_access_phase:1;

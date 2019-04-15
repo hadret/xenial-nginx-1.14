@@ -173,13 +173,15 @@ ngx_http_lua_balancer_by_lua(ngx_conf_t *cf, ngx_command_t *cmd,
 
         lscf->balancer.src = value[1];
 
-        p = ngx_palloc(cf->pool, NGX_HTTP_LUA_INLINE_KEY_LEN + 1);
+        p = ngx_palloc(cf->pool,
+                       sizeof("balancer_by_lua") + NGX_HTTP_LUA_INLINE_KEY_LEN);
         if (p == NULL) {
             return NGX_CONF_ERROR;
         }
 
         lscf->balancer.src_key = p;
 
+        p = ngx_copy(p, "balancer_by_lua", sizeof("balancer_by_lua") - 1);
         p = ngx_copy(p, NGX_HTTP_LUA_INLINE_TAG, NGX_HTTP_LUA_INLINE_TAG_LEN);
         p = ngx_http_lua_digest_hex(p, value[1].data, value[1].len);
         *p = '\0';
@@ -360,6 +362,8 @@ ngx_http_lua_balancer_by_chunk(lua_State *L, ngx_http_request_t *r)
 
     /* init nginx context in Lua VM */
     ngx_http_lua_set_req(L, r);
+
+#ifndef OPENRESTY_LUAJIT
     ngx_http_lua_create_new_globals_table(L, 0 /* narr */, 1 /* nrec */);
 
     /*  {{{ make new env inheriting main thread's globals table */
@@ -370,6 +374,7 @@ ngx_http_lua_balancer_by_chunk(lua_State *L, ngx_http_request_t *r)
     /*  }}} */
 
     lua_setfenv(L, -2);    /*  set new running env for the code closure */
+#endif /* OPENRESTY_LUAJIT */
 
     lua_pushcfunction(L, ngx_http_lua_traceback);
     lua_insert(L, 1);  /* put it under chunk and args */

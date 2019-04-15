@@ -1,6 +1,7 @@
-2017-09-28    VERSION 2.4.2
-    * Fix segfault in call to ngx_read_file of partial key purge
-    * Fix segfault in cplcf->conf->purge_all with separate location syntax
+2018-08-04    VERSION 2.5
+    * feat/docs: cache_purge_response_type directive, selecting response type (html|json|xml|text)
+    * break: changed status of HTTP code 404 (Not Found) to 412 (Precondition Failed)
+    * fix: remove path information of response body (#4, 3a8c08a, #11)
 
 2017-02-21    VERSION 2.4.1
     * Fix compatibility with nginx-1.11.6+, Sułowicz Paweł
