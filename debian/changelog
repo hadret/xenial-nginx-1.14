@@ -2,6 +2,13 @@ nginx (1.14.2-3xenial0) xenial; urgency=medium
 
   * Non-maintainer upload.
   * Introduce stream server traffic status dynamic modules.
+  * Upgrade 3rd party modules:
+    * http-lua to 0.10.14
+    * nchan module to 1.2.5;
+    * http-dav-ext to 3.0.0
+    * http-fancyindex to 0.4.3
+    * http-cache-purge to 2.5
+  * Fix and provide where missing watch files for the modules.
 
  -- Filip Chabik <hadret@gmail.com>  Mon, 15 Apr 2019 10:34:37 +0000
 
