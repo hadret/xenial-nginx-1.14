@@ -20,7 +20,6 @@ Module: http-lua
 Homepage: https://github.com/openresty/lua-nginx-module
 Version: 0.10.14
 Patch:
-  openssl-1.1.0.patch
   discover-luajit-2.1.patch
 Files-Excluded: .gitignore .gitattributes .travis.yml .github
 
