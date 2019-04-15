@@ -84,3 +84,11 @@ Version: 219131a
 Module: http-geoip2
 Homepage: https://github.com/leev/ngx_http_geoip2_module
 Version: 3.2
+
+Module: stream-server-traffic-status
+Homepage: https://github.com/vozlt/nginx-module-stream-sts
+Version: v0.1.1
+
+Module: http-stream-server-traffic-status
+Homepage: https://github.com/vozlt/nginx-module-sts
+Version: v0.1.1

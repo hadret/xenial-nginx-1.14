@@ -1,6 +1,12 @@
-nginx (1.14.2-2xenial0) xenial; urgency=medium
+nginx (1.14.2-3xenial0) xenial; urgency=medium
 
   * Non-maintainer upload.
+  * Introduce stream server traffic status dynamic modules.
+
+ -- Filip Chabik <hadret@gmail.com>  Mon, 15 Apr 2019 10:34:37 +0000
+
+nginx (1.14.2-2xenial0) xenial; urgency=medium
+
   * Replace built-in geoip with third-party geoip2.
 
  -- Filip Chabik <hadret@gmail.com>  Fri, 08 Feb 2019 10:13:59 +0000
