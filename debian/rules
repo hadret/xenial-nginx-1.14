@@ -19,6 +19,7 @@ DYN_MODS := \
 	http-lua \
 	http-ndk \
 	http-perl \
+	http-stream-server-traffic-status \
 	http-subs-filter \
 	http-uploadprogress \
 	http-upstream-fair \
@@ -28,7 +29,8 @@ DYN_MODS := \
 	mail \
 	nchan \
 	rtmp \
-	stream
+	stream \
+	stream-server-traffic-status
 
 MODULESDIR = $(CURDIR)/debian/modules
 BASEDIR = $(CURDIR)
@@ -122,8 +124,10 @@ full_configure_flags := \
 			--add-dynamic-module=$(MODULESDIR)/http-echo \
 			--add-dynamic-module=$(MODULESDIR)/http-geoip2 \
 			--add-dynamic-module=$(MODULESDIR)/http-upstream-fair \
+			--add-dynamic-module=$(MODULESDIR)/http-stream-server-traffic-status \
 			--add-dynamic-module=$(MODULESDIR)/http-subs-filter \
-			--add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status
+			--add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status \
+			--add-dynamic-module=$(MODULESDIR)/stream-server-traffic-status
 
 extras_configure_flags := \
 			$(common_configure_flags) \
@@ -159,8 +163,10 @@ extras_configure_flags := \
 			--add-dynamic-module=$(MODULESDIR)/rtmp \
 			--add-dynamic-module=$(MODULESDIR)/http-uploadprogress \
 			--add-dynamic-module=$(MODULESDIR)/http-upstream-fair \
+			--add-dynamic-module=$(MODULESDIR)/http-stream-server-traffic-status \
 			--add-dynamic-module=$(MODULESDIR)/http-subs-filter \
-			--add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status
+			--add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status \
+			--add-dynamic-module=$(MODULESDIR)/stream-server-traffic-status
 
 %:
 	dh $@ --without autoreconf

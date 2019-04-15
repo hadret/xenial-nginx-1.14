@@ -37,7 +37,7 @@ static void change_sub_count(memstore_channel_head_t *ch, ngx_int_t n) {
   if(ch->shared) {
     ngx_atomic_fetch_add(&ch->shared->sub_count, n);
   }
-  if(ch->cf->redis.enabled) {
+  if(ch->cf->redis.enabled && ch->cf->redis.storage_mode >= REDIS_MODE_DISTRIBUTED) {
     memstore_fakesub_add(ch, n);
   }
 }
@@ -63,8 +63,7 @@ static ngx_int_t sub_dequeue(ngx_int_t status, void *ptr, sub_data_t* d) {
 }
 
 static ngx_int_t sub_respond_message(ngx_int_t status, nchan_msg_t *msg, sub_data_t* d) {
-  nchan_msg_copy_t  remsg;
-  //nchan_msg_id_t   *last_msgid;
+  nchan_msg_t       remsg;
   ngx_int_t         mcount;
   
   int16_t          tags[NCHAN_MULTITAG_MAX], prevtags[NCHAN_MULTITAG_MAX];
@@ -74,49 +73,42 @@ static ngx_int_t sub_respond_message(ngx_int_t status, nchan_msg_t *msg, sub_dat
   
   assert( msg->id.tagcount == 1 );
   assert( msg->prev_id.tagcount == 1 );
-  
-  remsg.original = msg;
-  
-  remsg.copy = *msg;
-  remsg.copy.shared = 0;
-  remsg.copy.temp_allocd = 0;
+  nchan_msg_derive_stack(msg, &remsg, tags);
   
   mcount = d->multi_chanhead->multi_count;
   
-  remsg.copy.prev_id.tagcount = mcount;
-  remsg.copy.prev_id.tagactive = d->n;
+  remsg.prev_id.tagcount = mcount;
+  remsg.prev_id.tagactive = d->n;
   
-  remsg.copy.id.tagcount = mcount;
-  remsg.copy.id.tagactive = d->n;
+  remsg.id.tagcount = mcount;
+  remsg.id.tagactive = d->n;
   
   if(mcount > NCHAN_FIXED_MULTITAG_MAX) {
-    remsg.copy.id.tag.allocd = tags;
+    remsg.id.tag.allocd = tags;
     tags[0]=msg->id.tag.fixed[0];
-    remsg.copy.prev_id.tag.allocd = prevtags;
+    remsg.prev_id.tag.allocd = prevtags;
     prevtags[0]=msg->prev_id.tag.fixed[0];
   }
   
-  
-  nchan_expand_msg_id_multi_tag(&remsg.copy.prev_id, 0, d->n, -1);
-  nchan_expand_msg_id_multi_tag(&remsg.copy.id, 0, d->n, -1);
+  nchan_expand_msg_id_multi_tag(&remsg.prev_id, 0, d->n, -1);
+  nchan_expand_msg_id_multi_tag(&remsg.id, 0, d->n, -1);
   
   memstore_ensure_chanhead_is_ready(d->multi_chanhead, 1);
   
-  DBG("%p respond with transformed message %p %V (%p %V %i) %V", d->multi->sub, &remsg.copy, msgid_to_str(&remsg.copy.id), d->multi_chanhead, &d->multi_chanhead->id, d->n, &d->multi->id);
+  DBG("%p respond with transformed message %p %V (%p %V %i) %V", d->multi->sub, &remsg, msgid_to_str(&remsg.id), d->multi_chanhead, &d->multi_chanhead->id, d->n, &d->multi->id);
   
-  nchan_memstore_publish_generic(d->multi_chanhead, &remsg.copy, 0, NULL);
+  nchan_memstore_publish_generic(d->multi_chanhead, &remsg, 0, NULL);
   
   return NGX_OK;
 }
 
 static ngx_int_t sub_respond_status(ngx_int_t status, void *ptr, sub_data_t *d) {
-  DBG("%p subscriber respond with status (%p %V %i) %V", d->multi->sub, d->multi_chanhead, &d->multi_chanhead->id, d->n, &d->multi->id);
+  DBG("%p subscriber respond with status %i (%p %V %i) %V", d->multi->sub, status, d->multi_chanhead, &d->multi_chanhead->id, d->n, &d->multi->id);
   switch(status) {
     case NGX_HTTP_GONE: //delete
     case NGX_HTTP_CLOSE: //delete
       nchan_memstore_publish_generic(d->multi_chanhead, NULL, NGX_HTTP_GONE, &NCHAN_HTTP_STATUS_410);
       //nchan_store_memory.delete_channel(d->chid, NULL, NULL);
-      //TODO: change status to NOTREADY and whatnot
       break;
     
     case NGX_HTTP_CONFLICT:

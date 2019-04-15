@@ -49,7 +49,10 @@ static void es_ensure_headers_sent(full_subscriber_t *fsub) {
     
     bc->buf.last_buf = 0;
     bc->buf.flush = 1;
-
+    
+    r->chunked = 0;
+    r->header_only = 0;
+    
     nchan_output_filter(fsub->sub.request, &bc->chain);
     
     fsub->data.shook_hands = 1; 
@@ -103,7 +106,7 @@ static ngx_int_t es_respond_message(subscriber_t *sub,  nchan_msg_t *msg) {
   static ngx_str_t        terminal_newlines=ngx_string("\n\n");
   full_subscriber_t      *fsub = (full_subscriber_t  *)sub;
   u_char                 *cur = NULL, *last = NULL;
-  ngx_buf_t              *msg_buf = msg->buf;
+  ngx_buf_t              *msg_buf = &msg->buf;
   ngx_buf_t               databuf;
   nchan_buf_and_chain_t  *bc;
   ngx_chain_t            *first_link = NULL, *last_link = NULL;
@@ -233,8 +236,8 @@ static ngx_int_t es_respond_message(subscriber_t *sub,  nchan_msg_t *msg) {
   if(sub->cf->eventsource_event.len > 0) {
     prepend_es_response_line(fsub, &event_line, &first_link, &sub->cf->eventsource_event);
   }
-  else if(msg->eventsource_event.len > 0) {
-    prepend_es_response_line(fsub, &event_line, &first_link, &msg->eventsource_event);
+  else if(msg->eventsource_event) {
+    prepend_es_response_line(fsub, &event_line, &first_link, msg->eventsource_event);
   }
   
   return nchan_output_msg_filter(fsub->sub.request, msg, first_link);
@@ -242,7 +245,7 @@ static ngx_int_t es_respond_message(subscriber_t *sub,  nchan_msg_t *msg) {
 
 static void empty_handler(void) {}
 
-static ngx_int_t es_respond_status(subscriber_t *sub, ngx_int_t status_code, const ngx_str_t *status_line){
+static ngx_int_t es_respond_status(subscriber_t *sub, ngx_int_t status_code, const ngx_str_t *status_line,  ngx_chain_t *status_body){
   
   static ngx_str_t          empty_line = ngx_string("");
   full_subscriber_t        *fsub = (full_subscriber_t  *)sub;
@@ -255,7 +258,7 @@ static ngx_int_t es_respond_status(subscriber_t *sub, ngx_int_t status_code, con
   }
   
   if(fsub->data.shook_hands == 0 && status_code >= 400 && status_code <600) {
-    return subscriber_respond_unqueued_status(fsub, status_code, status_line);
+    return subscriber_respond_unqueued_status(fsub, status_code, status_line, status_body);
   }
   
   es_ensure_headers_sent(fsub);
@@ -273,6 +276,7 @@ static ngx_int_t es_respond_status(subscriber_t *sub, ngx_int_t status_code, con
   if((status_code >=400 && status_code <599) || status_code == NGX_HTTP_NOT_MODIFIED) {
     fsub->data.cln->handler = (ngx_http_cleanup_pt )empty_handler;
     fsub->sub.request->keepalive=0;
+    sub->request->headers_out.status = status_code;
     fsub->data.finalize_request=1;
     sub->fn->dequeue(sub);
   }
@@ -318,7 +322,7 @@ subscriber_t *eventsource_subscriber_create(ngx_http_request_t *r, nchan_msg_id_
   //msgid bufs -- unique per response
   nchan_subscriber_init_msgid_reusepool(ctx, r->pool);
   
-  nchan_subscriber_common_setup(sub, EVENTSOURCE, &sub_name, eventsource_fn, 0);
+  nchan_subscriber_common_setup(sub, EVENTSOURCE, &sub_name, eventsource_fn, 1, 0);
   return sub;
 }
 
