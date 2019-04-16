@@ -1,6 +1,12 @@
-nginx (1.14.2-3bionic1) bionic; urgency=medium
+nginx (1.14.2-3bionic2) bionic; urgency=medium
 
   * Non-maintainer upload.
+  * Move stream module to static for STS to work.
+
+ -- Filip Chabik <hadret@gmail.com>  Tue, 16 Apr 2019 10:54:33 +0000
+
+nginx (1.14.2-3bionic1) bionic; urgency=medium
+
   * Ditch no longer needed openssl-1.1.0 patch for lua module.
   * Fix wrong paths for STS modules.
 

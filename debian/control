@@ -74,7 +74,6 @@ Depends: libnginx-mod-http-geoip2 (= ${binary:Version}),
          libnginx-mod-http-image-filter (= ${binary:Version}),
          libnginx-mod-http-xslt-filter (= ${binary:Version}),
          libnginx-mod-mail (= ${binary:Version}),
-         libnginx-mod-stream (= ${binary:Version}),
          nginx-common (= ${source:Version}),
          ${misc:Depends},
          ${shlibs:Depends}
@@ -117,7 +116,6 @@ Depends: libnginx-mod-http-auth-ldap (= ${binary:Version}),
          libnginx-mod-http-xslt-filter (= ${binary:Version}),
          libnginx-mod-http-vhost-traffic-status (= ${binary:Version}),
          libnginx-mod-mail (= ${binary:Version}),
-         libnginx-mod-stream (= ${binary:Version}),
          libnginx-mod-stream-server-traffic-status (= ${binary:Version}),
          nginx-common (= ${source:Version}),
          ${misc:Depends},
@@ -198,7 +196,6 @@ Depends: libnginx-mod-http-auth-ldap (= ${binary:Version}),
          libnginx-mod-http-vhost-traffic-status (= ${binary:Version}),
          libnginx-mod-mail (= ${binary:Version}),
          libnginx-mod-nchan (= ${binary:Version}),
-         libnginx-mod-stream (= ${binary:Version}),
          libnginx-mod-stream-server-traffic-status (= ${binary:Version}),
          nginx-common (= ${source:Version}),
          ${misc:Depends},
@@ -270,16 +267,6 @@ Description: Mail module for Nginx
  .
  The module supports proxying all the standard mail protocols such as IMAP,
  POP3 & SMTP.
-
-Package: libnginx-mod-stream
-Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Stream module for Nginx
- The nginx_stream module adds stream proxy support to nginx.
- .
- Stream module supports loadbalancing & proxying to TCP servers. The module
- also supports ACLs/connection limiting and configuring multiple operational
- parameters.
 
 Package: libnginx-mod-http-perl
 Architecture: any

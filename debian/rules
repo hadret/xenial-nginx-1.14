@@ -29,7 +29,6 @@ DYN_MODS := \
 	mail \
 	nchan \
 	rtmp \
-	stream \
 	stream-server-traffic-status
 
 MODULESDIR = $(CURDIR)/debian/modules
@@ -97,7 +96,7 @@ core_configure_flags := \
                         --with-http_image_filter_module=dynamic \
                         --with-http_sub_module \
                         --with-http_xslt_module=dynamic \
-                        --with-stream=dynamic \
+                        --with-stream \
                         --with-stream_ssl_module \
                         --with-mail=dynamic \
                         --with-mail_ssl_module \
@@ -111,7 +110,7 @@ full_configure_flags := \
 			--with-http_image_filter_module=dynamic \
 			--with-http_sub_module \
 			--with-http_xslt_module=dynamic \
-			--with-stream=dynamic \
+			--with-stream \
 			--with-stream_ssl_module \
 			--with-stream_ssl_preread_module \
 			--with-mail=dynamic \
@@ -144,7 +143,7 @@ extras_configure_flags := \
 			--with-http_xslt_module=dynamic \
 			--with-mail=dynamic \
 			--with-mail_ssl_module \
-			--with-stream=dynamic \
+			--with-stream \
 			--with-stream_ssl_module \
 			--with-stream_ssl_preread_module \
 			--add-module=$(MODULESDIR)/http-upstream-check \
