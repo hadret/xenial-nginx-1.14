@@ -1,6 +1,13 @@
-nginx (1.14.2-3bionic0) bionic; urgency=medium
+nginx (1.14.2-3bionic1) bionic; urgency=medium
 
   * Non-maintainer upload.
+  * Ditch no longer needed openssl-1.1.0 patch for lua module.
+  * Fix wrong paths for STS modules.
+
+ -- Filip Chabik <hadret@gmail.com>  Tue, 16 Apr 2019 07:48:04 +0000
+
+nginx (1.14.2-3bionic0) bionic; urgency=medium
+
   * Introduce stream server traffic status dynamic modules.
   * Upgrade 3rd party modules:
     * http-lua to 0.10.14
