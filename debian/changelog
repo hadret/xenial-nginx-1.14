@@ -1,3 +1,22 @@
+nginx (1.14.2-4xenial0) xenial; urgency=medium
+
+  * Non-maintainer upload.
+  * SECURITY UPDATE: HTTP/2 Data Dribble issue
+    - debian/patches/CVE-2019-9511.patch: limited number of DATA frames in
+      src/http/v2/ngx_http_v2.c, src/http/v2/ngx_http_v2.h,
+      src/http/v2/ngx_http_v2_filter_module.c.
+    - CVE-2019-9511
+  * SECURITY UPDATE: HTTP/2 Resource Loop / Priority Shuffling issue
+    - debian/patches/CVE-2019-9513.patch: limited number of PRIORITY frames
+      in src/http/v2/ngx_http_v2.c, src/http/v2/ngx_http_v2.h.
+    - CVE-2019-9513
+  * SECURITY UPDATE: HTTP/2 0-Length Headers Leak issue
+    - debian/patches/CVE-2019-9516.patch: reject zero length headers with
+      PROTOCOL_ERROR in src/http/v2/ngx_http_v2.c.
+    - CVE-2019-9516
+
+ -- Filip Chabik <hadret@gmail.com>  Fri, 16 Aug 2019 08:24:21 +0000
+
 nginx (1.14.2-3xenial2) xenial; urgency=medium
 
   * Non-maintainer upload.
