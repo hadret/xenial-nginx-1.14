@@ -1,3 +1,15 @@
+nginx (1.14.2-5+xenial1) xenial; urgency=medium
+
+  * Non-maintainer upload.
+  * Switch to new versioning scheme.
+  * SECURITY UPDATE: request smuggling via error_page
+    - debian/patches/CVE-2019-20372.patch: discard request body when
+      redirecting to a URL via error_page in
+      src/http/ngx_http_special_response.c.
+    - CVE-2019-20372
+
+ -- Filip Chabik <hadret@gmail.com>  Tue, 14 Jan 2020 12:17:19 +0000
+
 nginx (1.14.2-4xenial0) xenial; urgency=medium
 
   * Non-maintainer upload.
